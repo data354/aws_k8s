@@ -1,9 +1,9 @@
 # PUBLIC IP
-control_plane_1_public_ip="3.221.175.227"
-data_plane_1_public_ip="3.230.112.74"
-data_plane_2_public_ip="107.21.215.248"
-data_plane_3_public_ip="3.84.65.80"
-master_ansible_public_ip="52.203.119.65"
+master_ansible_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=master-ansible" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)"
+control_plane_1_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=control-plane-1" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)"
+data_plane_1_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-1" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)"
+data_plane_2_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-2" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)"
+data_plane_3_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-3" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $master_ansible_public_ip &
 ssh-keygen -f "~/.ssh/known_hosts" -R $control_plane_1_public_ip &
@@ -67,8 +67,8 @@ ssh ubuntu@$master_ansible_public_ip "ssh-keyscan -H github.com >> ~/.ssh/known_
 
 # # Cloner le depot rke2
 ssh ubuntu@$master_ansible_public_ip "
-git clone git@github.com:data354/aws_k8s.git && \
-cp -rd aws_k8s/ansible ansible && \
+git clone git@github.com:data354/aws_k8s.git \
+cp -rd aws_k8s/ansible ansible \
 rm -rdf aws_k8s"
 
 echo "Master Ansible Public Ip : $master_ansible_public_ip"

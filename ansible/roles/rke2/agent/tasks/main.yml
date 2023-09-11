@@ -2,14 +2,6 @@
 - name: Install rke2-agent
   become: true
   block:
-    - name: Setup proxy environment for rke2-agent
-      when: use_proxy
-      ansible.builtin.copy:
-        src: proxy-rke2
-        dest: /etc/default/rke2-agent
-        owner: root
-        mode: "700"
-
     - name: Copy rke2 script install on the data plane
       ansible.builtin.copy:
         src: get_rke2.sh
