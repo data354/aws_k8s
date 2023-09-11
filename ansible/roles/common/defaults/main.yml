@@ -1,13 +1,8 @@
 # Load Balancer Configuration
-loadbalancer_address: "10.242.36.133"
 control_plane_adress: "10.240.0.5"
 domain_name: "{{ loadbalancer_address }}.sslip.io"
 
-# Proxy Configuration
-use_proxy: false
-proxy_host: 192.168.42.15:3128
-
- # User Configuration
+# User Configuration
 user: ubuntu
 
  # Kubernetes Configuration
@@ -15,7 +10,6 @@ apiserver_port: 6443
 join_cluster_port: 9345
 kube_config_directory: "/home/{{ user }}/.kube"
 cluster_token: fbf77b7e4e40d763ad4df32ec9e02d877b112eab
-rke2_data_dir: "/var/lib/rancher/rke2"
 
  # Installations
 install_longhorn: true

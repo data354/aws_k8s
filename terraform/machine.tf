@@ -29,7 +29,8 @@ resource "aws_instance" "master_ansible" {
               EOF
 
   tags = {
-    Name = "master-ansible"
+    Name  = "master-ansible"
+    Group = "aws-k8s-cluster"
   }
 }
 
@@ -59,7 +60,8 @@ resource "aws_instance" "control_plane_1" {
               EOF
 
   tags = {
-    Name = "control-plane-1"
+    Name  = "control-plane-1"
+    Group = "aws-k8s-cluster"
   }
 }
 
@@ -90,7 +92,8 @@ resource "aws_instance" "data_plane" {
   vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   tags = {
-    Name = "data-plane-${count.index + 1}"
+    Name  = "data-plane-${count.index + 1}"
+    Group = "aws-k8s-cluster"
   }
 }
 
