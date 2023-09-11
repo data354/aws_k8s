@@ -1,9 +1,9 @@
 # PUBLIC IP
-control_plane_1_public_ip="44.215.146.64"
-data_plane_1_public_ip="54.235.21.79"
-data_plane_2_public_ip="3.81.177.90"
-data_plane_3_public_ip="35.169.88.61"
-master_ansible_public_ip="52.22.31.97"
+control_plane_1_public_ip="3.221.175.227"
+data_plane_1_public_ip="3.230.112.74"
+data_plane_2_public_ip="107.21.215.248"
+data_plane_3_public_ip="3.84.65.80"
+master_ansible_public_ip="52.203.119.65"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $master_ansible_public_ip &
 ssh-keygen -f "~/.ssh/known_hosts" -R $control_plane_1_public_ip &
@@ -46,6 +46,14 @@ ssh ubuntu@$data_plane_3_public_ip "echo $master_ansible_pub_key > ~/.ssh/author
 
 wait
 
+# Ajouter les hostname des machines dans le master ansible
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.5 control-plane-1\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.6 data-plane-1\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.7 data-plane-2\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.8 data-plane-3\" >> /etc/hosts"' &
+
+wait
+
 # Ajouter les adresses ip des nodes ansibles aux hotes connues du master pour faciliter la connexion sans interruption
 ssh ubuntu@$master_ansible_public_ip "
 ssh-keyscan -H control-plane-1 > ~/.ssh/known_hosts && \
@@ -59,8 +67,8 @@ ssh ubuntu@$master_ansible_public_ip "ssh-keyscan -H github.com >> ~/.ssh/known_
 
 # # Cloner le depot rke2
 ssh ubuntu@$master_ansible_public_ip "
-git clone git@github.com:data354/gpt54.git && \
-cp -rd gpt54/cluster/rke2 rke2 && \
-rm -rdf gpt54"
+git clone git@github.com:data354/aws_k8s.git && \
+cp -rd aws_k8s/ansible ansible && \
+rm -rdf aws_k8s"
 
 echo "Master Ansible Public Ip : $master_ansible_public_ip"

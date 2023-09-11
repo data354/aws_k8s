@@ -4,8 +4,16 @@ resource "aws_instance" "master_ansible" {
   subnet_id     = aws_subnet.subnet1.id
   private_ip    = "10.240.0.4"
 
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.http_sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
   key_name               = aws_key_pair.my_key_pair.key_name # Use the key pair you created
+
+  ebs_block_device {
+    device_name           = "/dev/sda1"
+    delete_on_termination = true
+    encrypted             = false
+    volume_size           = "50"
+    volume_type           = "gp2"
+  }
 
   user_data = <<-EOF
               #!/bin/bash
@@ -17,6 +25,7 @@ resource "aws_instance" "master_ansible" {
               sudo apt install -y python3-pip
               sudo apt install -y ansible
               sudo apt install -y git
+              sudo apt install -y python3-pip 
               EOF
 
   tags = {
@@ -30,9 +39,17 @@ resource "aws_instance" "control_plane_1" {
   subnet_id     = aws_subnet.subnet1.id
   private_ip    = "10.240.0.5"
 
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.http_sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   key_name = aws_key_pair.my_key_pair.key_name # Use the key pair you created
+
+  ebs_block_device {
+    device_name           = "/dev/sda1"
+    delete_on_termination = true
+    encrypted             = false
+    volume_size           = "100"
+    volume_type           = "gp2"
+  }
 
   user_data = <<-EOF
               #!/bin/bash
@@ -55,6 +72,14 @@ resource "aws_instance" "data_plane" {
 
   key_name = aws_key_pair.my_key_pair.key_name # Use the key pair you created
 
+  ebs_block_device {
+    device_name           = "/dev/sda1"
+    delete_on_termination = true
+    encrypted             = false
+    volume_size           = "100"
+    volume_type           = "gp2"
+  }
+
   user_data = <<-EOF
               #!/bin/bash
               echo 'ssh-rsa YOUR_PUBLIC_KEY' >> /home/ec2-user/.ssh/authorized_keys
@@ -62,7 +87,7 @@ resource "aws_instance" "data_plane" {
               chown ec2-user:ec2-user /home/ec2-user/.ssh/authorized_keys
               EOF
 
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.http_sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   tags = {
     Name = "data-plane-${count.index + 1}"

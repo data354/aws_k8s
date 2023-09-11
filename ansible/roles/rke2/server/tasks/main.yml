@@ -57,7 +57,7 @@
 
     - name: Wait for port 9345 to become open on the control-plane
       ansible.builtin.wait_for:
-        host: "{{ loadbalancer_address }}"
+        host: "{{ control_plane_adress }}"
         port: "{{ join_cluster_port }}"
 
 - name: Run secondary server service
