@@ -77,4 +77,5 @@ ansible-playbook -i inventory.ini prerequises.playbook.yml  && \
 ansible-playbook -i inventory.ini main.playbook.yml
 "
 
-echo "Connection to Master ansible : ssh $user@$master_ansible_public_ip"
+echo "Connection to Master ansible ..."
+ssh $user@$master_ansible_public_ip
