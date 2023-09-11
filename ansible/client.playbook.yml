@@ -1,0 +1,8 @@
+---
+- name: Initialize kube client
+  hosts: localhost
+  tags:
+    - client
+    - master
+  roles:
+    - kube_client

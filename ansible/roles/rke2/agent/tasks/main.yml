@@ -1,0 +1,59 @@
+---
+- name: Install rke2-agent
+  become: true
+  block:
+    - name: Setup proxy environment for rke2-agent
+      when: use_proxy
+      ansible.builtin.copy:
+        src: proxy-rke2
+        dest: /etc/default/rke2-agent
+        owner: root
+        mode: "700"
+
+    - name: Copy rke2 script install on the data plane
+      ansible.builtin.copy:
+        src: get_rke2.sh
+        dest: /home/{{ user }}/rke2-agent
+        owner: root
+        mode: "700"
+
+    - name: Create Config Folder
+      ansible.builtin.file:
+        mode: "700"
+        path: /etc/rancher/rke2
+        state: directory
+
+    - name: Set rke2 config
+      ansible.builtin.template:
+        mode: "700"
+        src: rke2-config.j2
+        dest: /etc/rancher/rke2/config.yaml
+
+    - name: Run rke2 script
+      environment:
+        INSTALL_RKE2_TYPE: "agent"
+        INSTALL_RKE2_VERSION: "{{ install_rke2_version }}"
+      ansible.builtin.command: 
+        chdir: /home/{{ user }}/
+        cmd: sh rke2-agent
+      register: output
+      changed_when: output.rc !=0
+
+    - name: Delete Rke2 script file
+      ansible.builtin.file:
+        state: absent
+        path: /home/{{ user }}/rke2-agent
+
+- name: Run agent service
+  become: true
+  block:
+    - name: Wait for port 9345 to become open on the control-plane
+      ansible.builtin.wait_for:
+        host: "{{ loadbalancer_address }}"
+        port: "{{ join_cluster_port }}"
+
+    - name: Start rke2-agent service
+      ansible.builtin.service:
+        name: rke2-agent
+        state: started
+        enabled: true

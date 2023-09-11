@@ -1,0 +1,14 @@
+---
+- name: Setup Rke2 server
+  hosts: control_plane
+  tags:
+    - rke2-server
+  roles:
+    - rke2/server
+
+- name: Setup Rke2 agent
+  hosts: data_plane
+  tags:
+    - rke2-agent
+  roles:
+    - rke2/agent

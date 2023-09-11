@@ -1,0 +1,46 @@
+---
+- name: Install cert manager CRDs
+  ansible.builtin.command:
+    cmd: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{{ chart_version }}/cert-manager.crds.yaml
+
+- name: Deploy Cert manager
+  block:
+    - name: Add the Jetstack Helm repository
+      kubernetes.core.helm_repository:
+        name: jetstack
+        repo_url: "https://charts.jetstack.io"
+
+    - name: Install the cert-manager Helm chart (without proxy config)
+      when: not use_proxy
+      kubernetes.core.helm:
+        name: "{{ release_name }}"
+        chart_ref: jetstack/cert-manager
+        release_namespace: "{{ release_namespace }}"
+        create_namespace: true
+        chart_version: "{{ chart_version }}"
+        update_repo_cache: true
+
+    - name: Install the cert-manager Helm chart (with proxy config)
+      when: use_proxy
+      kubernetes.core.helm:
+        name: "{{ release_name }}"
+        chart_ref: jetstack/cert-manager
+        release_namespace: "{{ release_namespace }}"
+        create_namespace: true
+        chart_version: "{{ chart_version }}"
+        update_repo_cache: true
+        values:
+          http_proxy: http://{{ proxy_host }}
+          https_proxy: http://{{ proxy_host }}
+
+- name: Create default Issuer Self Signed
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1
+      kind: ClusterIssuer
+      metadata:
+        name: "{{ cluster_issuer_name }}"
+        namespace: default
+      spec:
+        selfSigned: {}

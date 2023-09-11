@@ -1,0 +1,69 @@
+---
+- name: Install rke2-server
+  become: true
+  block:
+    - name: Setup proxy environment for rke2-server
+      when: use_proxy
+      ansible.builtin.copy:
+        src: proxy-rke2
+        dest: /etc/default/rke2-server
+        owner: root
+        mode: "700"
+
+    - name: Copy rke2 install script on the control plane
+      ansible.builtin.copy:
+        src: get_rke2.sh
+        dest: /home/{{ user }}/rke2-server
+        owner: root
+        mode: "700"
+
+    - name: Create Config Folder
+      ansible.builtin.file:
+        mode: "700"
+        path: /etc/rancher/rke2
+        state: directory
+
+    - name: Set rke2 config
+      ansible.builtin.template:
+        mode: "700"
+        src: rke2-config.j2
+        dest: /etc/rancher/rke2/config.yaml
+
+    - name: Run rke2 script
+      ansible.builtin.command:
+        chdir: /home/{{ user }}/
+        cmd: sh rke2-server
+      environment:
+        INSTALL_RKE2_VERSION: "{{ install_rke2_version }}"
+      register: output
+      changed_when: output.rc !=0
+
+    - name: Delete Rke2 script file
+      become: true
+      ansible.builtin.file:
+        state: absent
+        path: /home/{{ user }}/rke2-server
+
+- name: Run primary server service
+  become: true
+  when: master | bool
+  block:
+    - name: Start rke2-server service
+      become: true
+      ansible.builtin.service:
+        name: rke2-server
+        state: started
+        enabled: true
+
+    - name: Wait for port 9345 to become open on the control-plane
+      ansible.builtin.wait_for:
+        host: "{{ loadbalancer_address }}"
+        port: "{{ join_cluster_port }}"
+
+- name: Run secondary server service
+  become: true
+  when: not master | bool
+  ansible.builtin.service:
+    name: rke2-server
+    state: started
+    enabled: true

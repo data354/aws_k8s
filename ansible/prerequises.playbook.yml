@@ -1,0 +1,16 @@
+---
+- name: Install open iscsi
+  tags:
+    - packages
+    - k8s
+  hosts: k8s
+  roles:
+    - prerequises/open_iscsi
+
+- name: Install python module
+  tags:
+    - packages
+    - lb
+  hosts: localhost
+  roles:
+    - prerequises/modules

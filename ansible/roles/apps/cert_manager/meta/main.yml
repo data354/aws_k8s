@@ -1,0 +1,12 @@
+galaxy_info:
+  role_name: rancher
+  author: data354
+  description: A set of settings and variables for rancher deployment
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: RedHat
+      versions:
+        - "all"
+dependencies:
+  - role: common

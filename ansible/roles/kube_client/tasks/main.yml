@@ -1,0 +1,63 @@
+---
+- name: Setting up kube config
+  become: true
+  block:
+    - name: Create kube config Folder
+      ansible.builtin.file:
+        state: directory
+        mode: "707"
+        path: "{{ kube_config_directory }}"
+
+    - name: Download kubeconfig file
+      delegate_to: "{{groups['control_plane'][0]}}"
+      ansible.builtin.fetch:
+        flat: true
+        src: /etc/rancher/rke2/rke2.yaml
+        dest: "{{ kube_config_directory }}/config"
+        mode: "707"
+
+    - name: Replace api server ip by loadbalancer ip
+      ansible.builtin.replace:
+        path: "{{ kube_config_directory }}/config"
+        regexp: '127\.0\.0\.1'
+        replace: '{{ loadbalancer_address }}'
+
+- name: Install Kubectl
+  become: true
+  block:
+    - name: Get kubectl bin from control-pane master
+      delegate_to: "{{groups['control_plane'][0]}}"
+      ansible.builtin.fetch:
+        src: "{{ rke2_data_dir }}/bin/kubectl"
+        dest: ./kubectl
+        flat: true
+        mode: "707"
+
+    - name: Create kubernetes bin file on master ansible
+      ansible.builtin.copy:
+        src: ./kubectl
+        dest: /usr/bin/kubectl
+        mode: "707"
+
+- name: Install Helm
+  become: true
+  block:
+    - name: Copy helm install script on the client
+      ansible.builtin.copy:
+        src: get_helm.sh
+        dest: /home/{{ user }}/get_helm.sh
+        owner: root
+        mode: "700"
+
+    - name: Run helm script
+      failed_when: false
+      ansible.builtin.command:
+        cmd: bash get_helm.sh
+        chdir: /home/{{ user }}/
+      register: my_output
+      changed_when: my_output.rc != 0
+
+    - name: Install helm plugin diff
+      failed_when: false
+      ansible.builtin.command:
+        cmd: helm plugin install https://github.com/databus23/helm-diff

@@ -1,0 +1,4 @@
+---
+chart_version: "v1.12.2"
+release_namespace: "cert-manager"
+release_name: "cert-manager"

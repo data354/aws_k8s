@@ -1,0 +1,36 @@
+# Load Balancer Configuration
+loadbalancer_address: "10.242.36.133"
+domain_name: "{{ loadbalancer_address }}.sslip.io"
+
+# Proxy Configuration
+use_proxy: false
+proxy_host: 192.168.42.15:3128
+
+ # User Configuration
+user: data354
+
+ # Kubernetes Configuration
+apiserver_port: 6443
+join_cluster_port: 9345
+kube_config_directory: "/home/{{ user }}/.kube"
+cluster_token: fbf77b7e4e40d763ad4df32ec9e02d877b112eab
+rke2_data_dir: "/var/lib/rancher/rke2"
+
+ # Installations
+install_longhorn: true
+install_monitoring_stack: false
+install_rke2_version: v1.26.6+rke2r1
+cluster_issuer_name: selfsigned-cluster-issuer
+
+ # Kubernetes Services NodePort Configuration
+k8s_services_nodeport:
+  - name: svc-1
+    port: 30000
+  - name: svc-2
+    port: 30001
+  - name: svc-3
+    port: 30002
+  - name: svc-4
+    port: 30003
+  - name: svc-5
+    port: 30004

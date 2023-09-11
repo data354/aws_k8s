@@ -1,0 +1,26 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# .tfvars files
+*.tfvars
+
+# .tfplan files
+*.tfplan
+
+# Output files
+*.zip
+*.tfout
+
+# Log files
+*.log
+
+# Exclude .terraform.lock.hcl if you're using Terraform v0.14+
+# Uncomment the following line if you're using Terraform v0.14+
+# !.terraform.lock.hcl

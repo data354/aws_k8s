@@ -1,0 +1,8 @@
+---
+- name: Install module python kubernetes
+  ansible.builtin.pip:
+    name: kubernetes
+
+- name: Install collection kubernetes.core
+  ansible.builtin.command:
+    cmd: ansible-galaxy collection install kubernetes.core

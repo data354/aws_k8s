@@ -1,0 +1,5 @@
+---
+release_name: "longhorn"
+release_namespace: "longhorn-system"
+chart_version: "1.5.0"
+storageclass_name: "longhorn-sc"

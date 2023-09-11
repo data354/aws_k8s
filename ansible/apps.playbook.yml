@@ -1,0 +1,10 @@
+---
+- name: Install apps
+  hosts: localhost
+  tags: apps
+  gather_facts: false
+  roles:
+    - role: apps/longhorn
+      when: install_longhorn
+    - role: apps/cert_manager
+      when: install_cert_manager
