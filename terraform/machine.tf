@@ -17,9 +17,6 @@ resource "aws_instance" "master_ansible" {
 
   user_data = <<-EOF
               #!/bin/bash
-              echo 'ssh-rsa YOUR_PUBLIC_KEY' >> /home/ec2-user/.ssh/authorized_keys
-              chmod 600 /home/ec2-user/.ssh/authorized_keys
-              chown ec2-user:ec2-user /home/ec2-user/.ssh/authorized_keys
               sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
               sudo apt update
               sudo apt install -y python3-pip
@@ -52,13 +49,6 @@ resource "aws_instance" "control_plane_1" {
     volume_type           = "gp2"
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              echo 'ssh-rsa YOUR_PUBLIC_KEY' >> /home/ec2-user/.ssh/authorized_keys
-              chmod 600 /home/ec2-user/.ssh/authorized_keys
-              chown ec2-user:ec2-user /home/ec2-user/.ssh/authorized_keys
-              EOF
-
   tags = {
     Name  = "control-plane-1"
     Group = "aws-k8s-cluster"
@@ -81,14 +71,7 @@ resource "aws_instance" "data_plane" {
     volume_size           = "100"
     volume_type           = "gp2"
   }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              echo 'ssh-rsa YOUR_PUBLIC_KEY' >> /home/ec2-user/.ssh/authorized_keys
-              chmod 600 /home/ec2-user/.ssh/authorized_keys
-              chown ec2-user:ec2-user /home/ec2-user/.ssh/authorized_keys
-              EOF
-
+  
   vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   tags = {
