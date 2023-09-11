@@ -68,6 +68,26 @@ resource "aws_security_group" "http_sg" {
   }
 }
 
+resource "aws_security_group" "all_in_private" {
+  name        = "ALL_IN_PRIVATE_SG"
+  description = "Allow HTTP inbound traffic"
+  vpc_id      = aws_vpc.k8s_network.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.240.0.0/24"] # This allows HTTP access from anywhere, restrict as needed
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # Allow all outbound traffic
+    cidr_blocks = ["10.240.0.0/24"]
+  }
+}
+
 resource "aws_eip_association" "eip_assoc_master_ansible" {
   instance_id   = aws_instance.master_ansible.id
   allocation_id = aws_eip.ipquery_master_ansible.id

@@ -20,7 +20,7 @@
       ansible.builtin.replace:
         path: "{{ kube_config_directory }}/config"
         regexp: '127\.0\.0\.1'
-        replace: '{{ loadbalancer_address }}'
+        replace: '{{ control_plane_adress }}'
 
 - name: Install Kubectl
   become: true
