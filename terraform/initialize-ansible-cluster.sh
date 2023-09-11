@@ -47,10 +47,10 @@ ssh ubuntu@$data_plane_3_public_ip "echo $master_ansible_pub_key > ~/.ssh/author
 wait
 
 # Ajouter les hostname des machines dans le master ansible
-ssh ubuntu@$master_ansible_pub_key "echo 10.240.0.5 control-plane-1 >> /etc/hosts" &
-ssh ubuntu@$master_ansible_pub_key "echo 10.240.0.6 data-plane-1 >> /etc/hosts" &
-ssh ubuntu@$master_ansible_pub_key "echo 10.240.0.7 data-plane-2 >> /etc/hosts" &
-ssh ubuntu@$master_ansible_pub_key "echo 10.240.0.8 data-plane-3 >> /etc/hosts" &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.5 control-plane-1\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.6 data-plane-1\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.7 data-plane-2\" >> /etc/hosts"' &
+ssh ubuntu@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.8 data-plane-3\" >> /etc/hosts"' &
 
 wait
 
