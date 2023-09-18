@@ -1,30 +1,10 @@
 # PUBLIC IP
 master_ansible_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=master-ansible" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)"
-control_plane_1_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=control-plane-1" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)"
-data_plane_1_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-1" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)"
-data_plane_2_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-2" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)"
-data_plane_3_public_ip="$(aws ec2 describe-instances --filters "Name=tag:Name,Values=data-plane-3" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)"
 
 user=ubuntu
 
-ssh-keygen -f "~/.ssh/known_hosts" -R $master_ansible_public_ip &
-ssh-keygen -f "~/.ssh/known_hosts" -R $control_plane_1_public_ip &
-ssh-keygen -f "~/.ssh/known_hosts" -R $data_plane_1_public_ip &
-ssh-keygen -f "~/.ssh/known_hosts" -R $data_plane_2_public_ip &
-ssh-keygen -f "~/.ssh/known_hosts" -R $data_plane_3_public_ip &
-
-wait
-
-ssh-keyscan -H $master_ansible_public_ip >> ~/.ssh/known_hosts &
-ssh-keyscan -H $control_plane_1_public_ip >> ~/.ssh/known_hosts &
-ssh-keyscan -H $data_plane_1_public_ip >> ~/.ssh/known_hosts &
-ssh-keyscan -H $data_plane_2_public_ip >> ~/.ssh/known_hosts &
-ssh-keyscan -H $data_plane_3_public_ip >> ~/.ssh/known_hosts &
-
-wait
-
-# Generer la paire de clé ssh du master ansible
-ssh $user@$master_ansible_public_ip "echo -e 'y\n' | ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''"
+ssh-keygen -f "~/.ssh/known_hosts" -R $master_ansible_public_ip
+ssh-keyscan -H $master_ansible_public_ip >> ~/.ssh/known_hosts
 
 # Recuperer la clé publique du master ansible
 master_ansible_pub_key=$(ssh $user@$master_ansible_public_ip "cat ~/.ssh/id_rsa.pub")
@@ -40,19 +20,29 @@ echo
 
 read ENTRER
 
-# Ajouter la clé publique du master ansible aux clés autorisées des nodes ansible
-ssh $user@$control_plane_1_public_ip "echo $master_ansible_pub_key > ~/.ssh/authorized_keys" &
-ssh $user@$data_plane_1_public_ip "echo $master_ansible_pub_key > ~/.ssh/authorized_keys" &
-ssh $user@$data_plane_2_public_ip "echo $master_ansible_pub_key > ~/.ssh/authorized_keys" &
-ssh $user@$data_plane_3_public_ip "echo $master_ansible_pub_key > ~/.ssh/authorized_keys" &
-
-wait
+# Verifier que l'enregistrement existe deja
+check_file_control_plane_1=$(ssh $user@$master_ansible_public_ip "cat /etc/hosts | grep control-plane-1")
+check_file_data_plane_1=$(ssh $user@$master_ansible_public_ip "cat /etc/hosts | grep data-plane-2")
+check_file_data_plane_2=$(ssh $user@$master_ansible_public_ip "cat /etc/hosts | grep data-plane-2")
+check_file_data_plane_3=$(ssh $user@$master_ansible_public_ip "cat /etc/hosts | grep data-plane-3")
 
 # Ajouter les hostname des machines dans le master ansible
-ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.5 control-plane-1\" >> /etc/hosts"' &
-ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.6 data-plane-1\" >> /etc/hosts"' &
-ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.7 data-plane-2\" >> /etc/hosts"' &
-ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.8 data-plane-3\" >> /etc/hosts"' &
+
+if [ -z "$check_file_control_plane_1" ]; then
+  ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.5 control-plane-1\" >> /etc/hosts"' &
+fi
+
+if [ -z "$check_file_data_plane_1" ]; then
+  ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.6 data-plane-1\" >> /etc/hosts"' &
+fi
+
+if [ -z "$check_file_data_plane_2" ]; then
+  ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.7 data-plane-2\" >> /etc/hosts"' &
+fi
+
+if [ -z "$check_file_data_plane_3" ]; then
+  ssh $user@$master_ansible_public_ip 'sudo bash -c "echo \"10.240.0.8 data-plane-3\" >> /etc/hosts"' &
+fi
 
 wait
 
@@ -78,4 +68,4 @@ ansible-playbook -i inventory.ini main.playbook.yml
 "
 
 echo "Connection to Master ansible ..."
-ssh $user@$master_ansible_public_ip
+ssh $user@$master_ansible_public_ip -i ~/.ssh/id_rsa

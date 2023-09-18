@@ -1,1 +1,10 @@
-## hygi
+## Creer une paire de cle ssh pour terraform
+```bash
+ssh-keygen -t rsa -b 4096
+```
+### Choisissez le nom de fichier /home/user/.ssh/terraform
+
+## Lancer le projet dans le dossier terraform
+```bash
+sh apply.sh
+```

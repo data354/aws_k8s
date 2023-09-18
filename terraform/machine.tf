@@ -17,6 +17,8 @@ resource "aws_instance" "master_ansible" {
 
   user_data = <<-EOF
               #!/bin/bash
+              echo '${file("~/.ssh/terraform")}' >> /home/ubuntu/.ssh/id_rsa
+              echo '${file("~/.ssh/terraform.pub")}' >> /home/ubuntu/.ssh/id_rsa.pub
               sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
               sudo apt update
               sudo apt install -y ansible
@@ -36,9 +38,9 @@ resource "aws_instance" "control_plane_1" {
   subnet_id     = aws_subnet.subnet1.id
   private_ip    = "10.240.0.5"
 
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
+  vpc_security_group_ids = [aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
-  key_name = aws_key_pair.my_key_pair.key_name # Use the key pair you created
+  key_name = aws_key_pair.terraform_key_pair.key_name # Use the key pair you created
 
   ebs_block_device {
     device_name           = "/dev/sda1"
@@ -61,7 +63,7 @@ resource "aws_instance" "data_plane" {
   subnet_id     = aws_subnet.subnet1.id
   private_ip    = "10.240.0.${count.index + 6}"
 
-  key_name = aws_key_pair.my_key_pair.key_name # Use the key pair you created
+  key_name = aws_key_pair.terraform_key_pair.key_name # Use the key pair you created
 
   ebs_block_device {
     device_name           = "/dev/sda1"
@@ -71,7 +73,7 @@ resource "aws_instance" "data_plane" {
     volume_type           = "gp2"
   }
 
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
+  vpc_security_group_ids = [aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   tags = {
     Name  = "data-plane-${count.index + 1}"
@@ -83,3 +85,9 @@ resource "aws_key_pair" "my_key_pair" {
   key_name   = "my-key"
   public_key = file("~/.ssh/id_rsa.pub")
 }
+
+resource "aws_key_pair" "terraform_key_pair" {
+  key_name   = "terraform-key"
+  public_key = file("~/.ssh/terraform.pub")
+}
+

@@ -93,22 +93,7 @@ resource "aws_eip_association" "eip_assoc_master_ansible" {
   allocation_id = aws_eip.ipquery_master_ansible.id
 }
 
-resource "aws_eip_association" "eip_assoc_data_plane" {
-  count = 3
-  instance_id   = aws_instance.data_plane[count.index].id
-  allocation_id = aws_eip.ipquery_data_plane[count.index].id
-}
-
-resource "aws_eip_association" "eip_assoc_control_plane" {
-  instance_id   = aws_instance.control_plane_1.id
-  allocation_id = aws_eip.ipquery_control_plane.id
-}
-
 resource "aws_eip" "ipquery_master_ansible" {}
-resource "aws_eip" "ipquery_control_plane" {}
-resource "aws_eip" "ipquery_data_plane" {
-  count = 3
-}
 
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.k8s_network.id
