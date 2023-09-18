@@ -19,7 +19,6 @@ resource "aws_instance" "master_ansible" {
               #!/bin/bash
               sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
               sudo apt update
-              sudo apt install -y python3-pip
               sudo apt install -y ansible
               sudo apt install -y git
               sudo apt install -y python3-pip 
@@ -71,7 +70,7 @@ resource "aws_instance" "data_plane" {
     volume_size           = "100"
     volume_type           = "gp2"
   }
-  
+
   vpc_security_group_ids = [aws_security_group.ssh_sg.id, aws_security_group.all_in_private.id, aws_security_group.http_sg.id]
 
   tags = {

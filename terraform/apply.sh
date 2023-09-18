@@ -1,2 +1,2 @@
-terraform apply -auto-approvesh
-initialize-k8s-cluster.sh
+terraform apply -auto-approve
+sh initialize-k8s-cluster.sh
